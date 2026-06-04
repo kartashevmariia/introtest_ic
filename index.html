@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интервью по компетенциям - Диагностика</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #FFFFFF;
+            color: #2F4156;
+            line-height: 1.6;
+        }
+
+        .screen {
+            min-height: 100vh;
+            padding: 60px 40px;
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: #2F4156;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .block-description {
+            font-size: 18px;
+            color: #2F4156;
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #C8D9E6;
+            border-radius: 8px;
+        }
+
+        .question-block {
+            background-color: #C8D9E6;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(47, 65, 86, 0.1);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .question-block.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .question-number {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2F4156;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2F4156;
+            margin-bottom: 20px;
+        }
+
+        .answer-option {
+            display: block;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            background-color: #FFFFFF;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .answer-option:hover {
+            background-color: #F5EFEB;
+            border-color: #567C8D;
+        }
+
+        .answer-option.selected {
+            background-color: #F5EFEB;
+            border-color: #2F4156;
+        }
+
+        .answer-option input[type="radio"] {
+            margin-right: 12px;
+        }
+
+        .answer-option label {
+            font-size: 18px;
+            font-weight: 400;
+            color: #2F4156;
+            cursor: pointer;
+        }
+
+        .feedback-block {
+            display: none;
+            background-color: #C8D9E6;
+            padding: 40px;
+            margin-top: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(47, 65, 86, 0.1);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .feedback-block.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .feedback-text {
+            font-size: 16px;
+            color: #2F4156;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .feedback-highlight {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2F4156;
+            margin-top: 20px;
+        }
+
+        .next-button {
+            display: inline-block;
+            padding: 18px 40px;
+            background-color: #2F4156;
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .next-button:hover {
+            background-color: #567C8D;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background-color: #FFFFFF;
+        }
+
+        .results-table th {
+            background-color: #2F4156;
+            color: #FFFFFF;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .results-table td {
+            padding: 15px;
+            border-bottom: 1px solid #C8D9E6;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-good { background-color: #567C8D; }
+        .status-medium { background-color: #C8D9E6; border: 1px solid #2F4156; }
+        .status-poor { background-color: #2F4156; }
+
+        .final-recommendation {
+            background-color: #C8D9E6;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #2F4156;
+        }
+
+        .final-recommendation h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #2F4156;
+        }
+
+        .final-recommendation p {
+            font-size: 16px;
+            color: #2F4156;
+            line-height: 1.6;
+        }
+
+        .save-note {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #F5EFEB;
+            border-radius: 8px;
+            border-left: 4px solid #567C8D;
+            font-size: 16px;
+            color: #2F4156;
+            font-style: italic;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .screen { padding: 40px 20px; }
+            .question-block { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Screen 1 -->
+    <div class="screen active" id="screen1">
+        <div class="container">
+            <h1>Блок 1. Типы интервью и специфика ИПК</h1>
+            <div class="block-description">
+                Этот блок диагностирует, насколько осознанно вы выбираете формат интервью и понимаете, какие данные он дает.
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 1</div>
+                <div class="question-text">Представьте, что вы спрашиваете кандидата: «Расскажите о себе и своём опыте работы». Считаете ли вы, что такой вопрос дает вам данные о том, как кандидат ведет себя в реальных рабочих ситуациях?</div>
+                <div class="answer-option" onclick="selectAnswer(1, 'no', this)">
+                    <input type="radio" name="q1" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(1, 'yes', this)">
+                    <input type="radio" name="q1" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 2</div>
+                <div class="question-text">Интервью по компетенциям основывается на принципе, что прошлое поведение человека предсказывает его будущее поведение в похожих ситуациях. Придерживаетесь ли вы этого принципа?</div>
+                <div class="answer-option" onclick="selectAnswer(2, 'yes', this)">
+                    <input type="radio" name="q2" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(2, 'no', this)">
+                    <input type="radio" name="q2" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 3</div>
+                <div class="question-text">Вы когда-либо задавали кандидату вопрос типа: «Что бы вы сделали, если бы в команде возник конфликт?» Считаете ли вы, что такой вопрос дает объективную информацию?</div>
+                <div class="answer-option" onclick="selectAnswer(3, 'no', this)">
+                    <input type="radio" name="q3" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(3, 'yes', this)">
+                    <input type="radio" name="q3" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 4</div>
+                <div class="question-text">Считаете ли вы, что для разных должностей нужно задавать принципиально разные вопросы на интервью?</div>
+                <div class="answer-option" onclick="selectAnswer(4, 'yes', this)">
+                    <input type="radio" name="q4" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(4, 'no', this)">
+                    <input type="radio" name="q4" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="feedback-block" id="feedback1">
+                <div class="feedback-title">Обратная связь по Блоку 1</div>
+                <div id="feedbackText1"></div>
+                <button class="next-button" onclick="nextScreen(2)">Перейти к следующему блоку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2 -->
+    <div class="screen" id="screen2">
+        <div class="container">
+            <h1>Блок 2. Подготовка: компетенции и индикаторы</h1>
+            <div class="block-description">
+                Этот блок диагностирует, насколько структурированно вы готовитесь к интервью.
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 5</div>
+                <div class="question-text">Перед интервью вы заранее определяете, какие конкретные компетенции важны для данной должности?</div>
+                <div class="answer-option" onclick="selectAnswer(5, 'yes', this)">
+                    <input type="radio" name="q5" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(5, 'no', this)">
+                    <input type="radio" name="q5" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 6</div>
+                <div class="question-text">Считаете ли вы, что достаточно оценивать кандидата в целом по ощущению «подходит — не подходит»?</div>
+                <div class="answer-option" onclick="selectAnswer(6, 'no', this)">
+                    <input type="radio" name="q6" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(6, 'yes', this)">
+                    <input type="radio" name="q6" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 7</div>
+                <div class="question-text">Знаете ли вы разницу между компетенцией и её индикатором?</div>
+                <div class="answer-option" onclick="selectAnswer(7, 'yes', this)">
+                    <input type="radio" name="q7" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(7, 'no', this)">
+                    <input type="radio" name="q7" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 8</div>
+                <div class="question-text">Бывало ли так, что вы приходили на интервью без заранее подготовленного списка вопросов?</div>
+                <div class="answer-option" onclick="selectAnswer(8, 'no', this)">
+                    <input type="radio" name="q8" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(8, 'yes', this)">
+                    <input type="radio" name="q8" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="feedback-block" id="feedback2">
+                <div class="feedback-title">Обратная связь по Блоку 2</div>
+                <div id="feedbackText2"></div>
+                <button class="next-button" onclick="nextScreen(3)">Перейти к следующему блоку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3 -->
+    <div class="screen" id="screen3">
+        <div class="container">
+            <h1>Блок 3. STAR-метод и формулирование вопросов</h1>
+            <div class="block-description">
+                Этот блок диагностирует, насколько осознанно вы строите вопросы на интервью.
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 9</div>
+                <div class="question-text">Знакомы ли вы со структурой STAR (Ситуация — Задача — Действие — Результат)?</div>
+                <div class="answer-option" onclick="selectAnswer(9, 'yes', this)">
+                    <input type="radio" name="q9" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(9, 'no', this)">
+                    <input type="radio" name="q9" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 10</div>
+                <div class="question-text">Считаете ли вы вопрос «Вы умеете работать в условиях неопределенности?» хорошим вопросом?</div>
+                <div class="answer-option" onclick="selectAnswer(10, 'no', this)">
+                    <input type="radio" name="q10" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(10, 'yes', this)">
+                    <input type="radio" name="q10" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 11</div>
+                <div class="question-text">Когда кандидат отвечает размыто, задаёте ли вы уточняющие вопросы?</div>
+                <div class="answer-option" onclick="selectAnswer(11, 'yes', this)">
+                    <input type="radio" name="q11" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(11, 'no', this)">
+                    <input type="radio" name="q11" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 12</div>
+                <div class="question-text">Бывало ли, что вы подсказывали кандидату «правильный» ответ?</div>
+                <div class="answer-option" onclick="selectAnswer(12, 'yes', this)">
+                    <input type="radio" name="q12" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(12, 'no', this)">
+                    <input type="radio" name="q12" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="feedback-block" id="feedback3">
+                <div class="feedback-title">Обратная связь по Блоку 3</div>
+                <div id="feedbackText3"></div>
+                <button class="next-button" onclick="nextScreen(4)">Перейти к следующему блоку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 4 -->
+    <div class="screen" id="screen4">
+        <div class="container">
+            <h1>Блок 4. Проведение интервью</h1>
+            <div class="block-description">
+                Этот блок диагностирует, насколько уверенно вы управляете ходом беседы.
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 13</div>
+                <div class="question-text">Считаете ли вы, что если кандидат нервничает, это говорит о его некомпетентности?</div>
+                <div class="answer-option" onclick="selectAnswer(13, 'no', this)">
+                    <input type="radio" name="q13" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(13, 'yes', this)">
+                    <input type="radio" name="q13" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 14</div>
+                <div class="question-text">Если кандидат уходит от ответа, возвращаете ли вы его к конкретному примеру?</div>
+                <div class="answer-option" onclick="selectAnswer(14, 'yes', this)">
+                    <input type="radio" name="q14" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(14, 'no', this)">
+                    <input type="radio" name="q14" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 15</div>
+                <div class="question-text">Позволяли ли вы кандидату говорить долго и не по теме?</div>
+                <div class="answer-option" onclick="selectAnswer(15, 'no', this)">
+                    <input type="radio" name="q15" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(15, 'yes', this)">
+                    <input type="radio" name="q15" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 16</div>
+                <div class="question-text">Считаете ли вы, что уверенный кандидат с большей вероятностью окажется хорошим сотрудником?</div>
+                <div class="answer-option" onclick="selectAnswer(16, 'no', this)">
+                    <input type="radio" name="q16" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(16, 'yes', this)">
+                    <input type="radio" name="q16" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="feedback-block" id="feedback4">
+                <div class="feedback-title">Обратная связь по Блоку 4</div>
+                <div id="feedbackText4"></div>
+                <button class="next-button" onclick="nextScreen(5)">Перейти к следующему блоку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 5 -->
+    <div class="screen" id="screen5">
+        <div class="container">
+            <h1>Блок 5. Анализ ответов и принятие решения</h1>
+            <div class="block-description">
+                Этот блок диагностирует, насколько обоснованно вы принимаете финальное решение о найме.
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 17</div>
+                <div class="question-text">После интервью вы фиксируете ответы кандидата в письменном виде?</div>
+                <div class="answer-option" onclick="selectAnswer(17, 'yes', this)">
+                    <input type="radio" name="q17" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(17, 'no', this)">
+                    <input type="radio" name="q17" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 18</div>
+                <div class="question-text">Может ли ваше решение основываться на интуиции, если кандидат «явно подходит»?</div>
+                <div class="answer-option" onclick="selectAnswer(18, 'no', this)">
+                    <input type="radio" name="q18" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(18, 'yes', this)">
+                    <input type="radio" name="q18" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 19</div>
+                <div class="question-text">Есть ли у вас инструмент для объективного сравнения кандидатов?</div>
+                <div class="answer-option" onclick="selectAnswer(19, 'yes', this)">
+                    <input type="radio" name="q19" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(19, 'no', this)">
+                    <input type="radio" name="q19" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 20</div>
+                <div class="question-text">Принимали ли вы решение о найме ещё в процессе интервью?</div>
+                <div class="answer-option" onclick="selectAnswer(20, 'no', this)">
+                    <input type="radio" name="q20" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(20, 'yes', this)">
+                    <input type="radio" name="q20" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="feedback-block" id="feedback5">
+                <div class="feedback-title">Обратная связь по Блоку 5</div>
+                <div id="feedbackText5"></div>
+                <button class="next-button" onclick="nextScreen(6)">Перейти к следующему блоку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 6 -->
+    <div class="screen" id="screen6">
+        <div class="container">
+            <h1>Блок 6. Когнитивные искажения</h1>
+            <div class="block-description">
+                Этот блок диагностирует, насколько вы осознаёте влияние собственных ментальных ловушек на оценку кандидата и умеете ли вы отделять субъективное впечатление от объективных данных в момент принятия решения о найме.
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 17</div>
+                <div class="question-text">Случалось ли так, что кандидат произвёл на вас очень хорошее первое впечатление, и вы ловили себя на том, что автоматически оцениваете все его последующие ответы как «сильные», даже если они были размытыми?</div>
+                <div class="answer-option" onclick="selectAnswer(21, 'yes', this)">
+                    <input type="radio" name="q21" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(21, 'no', this)">
+                    <input type="radio" name="q21" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 18</div>
+                <div class="question-text">Считаете ли вы, что кандидат, который учился в том же университете, что и вы, или работал в компании, которую вы уважаете, с большей вероятностью окажется сильным сотрудником?</div>
+                <div class="answer-option" onclick="selectAnswer(22, 'no', this)">
+                    <input type="radio" name="q22" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(22, 'yes', this)">
+                    <input type="radio" name="q22" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 19</div>
+                <div class="question-text">Бывало ли так, что после первых двух-трёх ответов кандидата вы уже мысленно приняли решение о найме и дальше лишь искали подтверждение своему выводу?</div>
+                <div class="answer-option" onclick="selectAnswer(23, 'yes', this)">
+                    <input type="radio" name="q23" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(23, 'no', this)">
+                    <input type="radio" name="q23" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="question-block">
+                <div class="question-number">Вопрос 20</div>
+                <div class="question-text">Уверены ли вы, что ваши оценки кандидатов полностью основаны на их ответах и не зависят от таких факторов, как внешний вид, манера речи или то, насколько уверенно они держатся?</div>
+                <div class="answer-option" onclick="selectAnswer(24, 'no', this)">
+                    <input type="radio" name="q24" value="yes">
+                    <label>Да</label>
+                </div>
+                <div class="answer-option" onclick="selectAnswer(24, 'yes', this)">
+                    <input type="radio" name="q24" value="no">
+                    <label>Нет</label>
+                </div>
+            </div>
+
+            <div class="feedback-block" id="feedback6">
+                <div class="feedback-title">Обратная связь по Блоку 6</div>
+                <div id="feedbackText6"></div>
+                <button class="next-button" onclick="nextScreen(7)">Перейти к результатам</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 7: Final Results -->
+    <div class="screen" id="screen7">
+        <div class="container">
+            <h1>Итоговые результаты</h1>
+            <div id="finalResults"></div>
+            <button class="next-button" onclick="location.reload()">Пройти заново</button>
+        </div>
+    </div>
+
+    <script>
+        let scores = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+        let answered = {};
+
+        const feedbackTexts = {
+            1: {
+                high: '<p class="feedback-text">Вы уже понимаете, чем интервью по компетенциям отличается от других форматов, и интуитивно чувствуете его логику.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 1 поможет вам систематизировать это понимание и получить четкий понятийный фундамент, на котором строится весь курс.</div>',
+                medium: '<p class="feedback-text">Судя по ответам, вы пока смешиваете разные типы интервью или не до конца понимаете, какие данные дает каждый из них.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 1 — ваш приоритет. Он даст вам четкое понимание специфики ИПК и объяснит, почему именно этот формат дает надежные данные для решения о найме.</div>',
+                low: '<p class="feedback-text">Похоже, тема типов интервью пока для вас не структурирована.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 1 — ваш приоритет. Он создает понятийную базу, без которой сложно двигаться дальше по курсу.</div>'
+            },
+            2: {
+                high: '<p class="feedback-text">Вы уже подходите к подготовке осознанно и понимаете важность структуры.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 2 поможет вам перейти от интуитивной подготовки к системной: вы научитесь строить профиль компетенций под конкретную вакансию и формулировать измеримые индикаторы.</div>',
+                medium: '<p class="feedback-text">Подготовка к интервью пока скорее стихийная, чем системная.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 2 — ваш приоритет. Он даст вам конкретный алгоритм подготовки, который можно применять перед каждым интервью.</div>',
+                low: '<p class="feedback-text">Подготовка к интервью — зона, которая требует особого внимания.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 2 — ваш приоритет. Без подготовки даже опытный интервьюер рискует принять решение на основе случайных данных.</div>'
+            },
+            3: {
+                high: '<p class="feedback-text">Вы уже работаете с вопросами осознанно и, скорее всего, интуитивно используете элементы STAR.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 3 поможет вам сделать этот навык системным: вы научитесь формулировать вопросы точно под индикаторы компетенций и избегать типичных ошибок.</div>',
+                medium: '<p class="feedback-text">Вопросы на интервью пока формулируются скорее интуитивно.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 3 — ваш приоритет. Он даст вам конкретный инструмент для построения вопросов, которые действительно работают.</div>',
+                low: '<p class="feedback-text">Формулирование поведенческих вопросов — зона, требующая развития.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 3 — ваш приоритет. Без этого навыка даже хорошо подготовленное интервью не даст нужных данных.</div>'
+            },
+            4: {
+                high: '<p class="feedback-text">Вы уже управляете интервью уверенно и понимаете, что ваше поведение влияет на качество данных.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 4 поможет вам отточить этот навык на практике — через работу с тремя типами «сложных» кандидатов в диалоговых тренажерах.</div>',
+                medium: '<p class="feedback-text">Проведение интервью пока даётся неравномерно: в одних ситуациях вы управляете беседой уверенно, в других — теряете контроль.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 4 — ваш приоритет. Он разберёт типичные сложные ситуации и даст инструменты для работы с разными типами кандидатов.</div>',
+                low: '<p class="feedback-text">Управление ходом интервью — зона, которая требует серьёзной практики.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 4 — один из ключевых в курсе. Здесь вы отработаете навык проведения беседы в реалистичных симуляторах.</div>'
+            },
+            5: {
+                high: '<p class="feedback-text">Вы уже принимаете решения о найме осознанно и опираетесь на данные, а не только на впечатление.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 5 поможет вам формализовать этот подход: вы получите конкретный инструмент — оценочный лист — и отработаете его на реальных транскриптах интервью.</div>',
+                medium: '<p class="feedback-text">Финальное решение пока принимается непоследовательно: иногда на основе данных, иногда — на основе впечатления.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 5 — ваш приоритет. Он покажет, как перейти от субъективного «кандидат понравился» к обоснованному выводу.</div>',
+                low: '<p class="feedback-text">Анализ ответов и принятие обоснованного решения — зона, которая требует особого внимания.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 5 — ваш приоритет. Именно здесь чаще всего происходят ошибки найма, которые дорого обходятся команде.</div>'
+            },
+            6: {
+                high: '<p class="feedback-text">Вы хорошо осознаёте, как когнитивные ловушки влияют на оценку кандидатов, и умеете замечать их в себе. Это редкий и ценный навык.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 6 станет для вас точкой совершенствования: вы научитесь не просто замечать искажения, но и нейтрализовывать их в режиме реального времени — прямо в процессе интервью. Обратите особое внимание на финальный тренажер, где всё это нужно будет применить в едином сценарии.</div>',
+                medium: '<p class="feedback-text">Вы частично осознаёте влияние когнитивных искажений, но пока не всегда можете их отследить и скорректировать в процессе оценки.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 6 — ваш приоритет: он подсветит конкретные ментальные ловушки, с которыми сталкиваются нанимающие менеджеры, и покажет, как выстроить системную защиту от них на каждом этапе интервью. Также рекомендуем вернуться к Блоку 5 — он поможет выстроить объективную систему анализа ответов, которая сама по себе снижает влияние субъективных факторов.</div>',
+                low: '<p class="feedback-text">Пока когнитивные искажения оказывают сильное влияние на ваши оценки — и скорее всего, вы этого не замечаете. Это не недостаток, а точка роста, с которой начинают многие опытные менеджеры.</p><div class="feedback-highlight"><strong>Рекомендация:</strong> Блок 6 станет для вас одним из самых важных в курсе: он поможет увидеть собственные «слепые зоны» и научит отключать интуицию там, где нужны только факты. Также настоятельно рекомендуем уделить особое внимание Блокам 2 и 5 — структурированная подготовка и чёткие критерии оценки являются лучшей защитой от субъективности.</div>'
+            }
+        };
+
+        function selectAnswer(qNum, correctAnswer, element) {
+            const parent = element.parentElement;
+            parent.querySelectorAll('.answer-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+            
+            // Определяем блок по номеру вопроса
+            let blockNum;
+            if (qNum <= 20) {
+                blockNum = Math.ceil(qNum / 4);
+            } else {
+                blockNum = 6;
+            }
+            
+            if (!answered[qNum]) {
+                if (element.querySelector('input').value === correctAnswer) {
+                    scores[blockNum]++;
+                }
+                answered[qNum] = true;
+            }
+            
+            checkBlockComplete(blockNum);
+        }
+
+        function checkBlockComplete(blockNum) {
+            let start, end;
+            if (blockNum === 6) {
+                start = 21;
+                end = 24;
+            } else {
+                start = (blockNum - 1) * 4 + 1;
+                end = blockNum * 4;
+            }
+            
+            let allAnswered = true;
+            
+            for (let i = start; i <= end; i++) {
+                if (!document.querySelector(`input[name="q${i}"]:checked`)) {
+                    allAnswered = false;
+                    break;
+                }
+            }
+            
+            if (allAnswered) {
+                showFeedback(blockNum);
+            }
+        }
+
+        function showFeedback(blockNum) {
+            const feedback = document.getElementById('feedback' + blockNum);
+            const text = document.getElementById('feedbackText' + blockNum);
+            const score = scores[blockNum];
+            
+            let level = score >= 3 ? 'high' : (score >= 1 ? 'medium' : 'low');
+            text.innerHTML = feedbackTexts[blockNum][level];
+            
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.classList.add('visible');
+            }, 100);
+        }
+
+        function nextScreen(num) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen' + num).classList.add('active');
+            window.scrollTo(0, 0);
+            
+            if (num === 7) showFinalResults();
+            
+            setTimeout(() => {
+                observeElements();
+            }, 100);
+        }
+
+        function observeElements() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            document.querySelectorAll('.question-block:not(.visible)').forEach(block => {
+                observer.observe(block);
+            });
+        }
+
+        function showFinalResults() {
+            const blockNames = {
+                1: 'Типы интервью', 2: 'Подготовка', 3: 'STAR-метод',
+                4: 'Проведение', 5: 'Анализ и решение', 6: 'Когнитивные искажения'
+            };
+            
+            let html = '<table class="results-table"><tr><th>Блок</th><th>Тема</th><th>Статус</th></tr>';
+            
+            let weakBlocks = [];
+            
+            for (let i = 1; i <= 6; i++) {
+                const score = scores[i];
+                let status, color;
+                
+                if (score >= 3) {
+                    status = 'Навык развит хорошо';
+                    color = 'status-good';
+                } else if (score >= 1) {
+                    status = 'Навык развит слабо';
+                    color = 'status-medium';
+                    weakBlocks.push(i);
+                } else {
+                    status = 'Навык не развит';
+                    color = 'status-poor';
+                    weakBlocks.push(i);
+                }
+                
+                html += `<tr><td>Блок ${i}</td><td>${blockNames[i]}</td><td><span class="status-dot ${color}"></span>${status}</td></tr>`;
+            }
+            
+            html += '</table>';
+            
+            if (weakBlocks.length > 0) {
+                const blockList = weakBlocks.map(b => `Блок ${b}`).join(', ');
+                html += `
+                    <div class="final-recommendation">
+                        <h3>В обучении обратите внимание на блоки:</h3>
+                        <p><strong>${blockList}</strong></p>
+                        <p>Эти темы требуют особого внимания для формирования устойчивых навыков проведения интервью по компетенциям.</p>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="final-recommendation">
+                        <h3>Отличный результат!</h3>
+                        <p>Вы продемонстрировали уверенное владение всеми ключевыми аспектами интервью по компетенциям. Курс поможет вам систематизировать и углубить имеющиеся знания.</p>
+                    </div>
+                `;
+            }
+            
+            html += '<div class="save-note">Сохраните результаты себе, чтобы сравнить их после прохождения курса</div>';
+            
+            document.getElementById('finalResults').innerHTML = html;
+        }
+
+        window.addEventListener('load', () => {
+            observeElements();
+        });
+    </script>
+</body>
+</html>
